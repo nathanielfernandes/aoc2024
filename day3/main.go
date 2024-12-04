@@ -23,11 +23,7 @@ func parseMulInner(inp string, i int) (int, int) {
 	j := i
 	for j < i+7 {
 		n := inp[j]
-		if n == ',' {
-			if comma {
-				j++
-				break
-			}
+		if n == ',' && !comma {
 			comma = true
 		} else if unicode.IsDigit(rune(n)) {
 			if comma {
