@@ -10,6 +10,45 @@ import (
 	. "github.com/nathanielfernandes/aoc-2024/helpers"
 )
 
+func parseMulInner(inp string, i int) (int, int) {
+	// string buffers
+	lhs := strings.Builder{}
+	rhs := strings.Builder{}
+	lhs.Grow(3)
+	rhs.Grow(3)
+
+	// if we have seen a comma
+	comma := false
+	// only look ahead 7 chars, because the numbers are 1-3 digits + `)`
+	j := i
+	for j < i+7 {
+		n := inp[j]
+		if n == ',' {
+			if comma {
+				j++
+				break
+			}
+			comma = true
+		} else if unicode.IsDigit(rune(n)) {
+			if comma {
+				rhs.WriteByte(n)
+			} else {
+				lhs.WriteByte(n)
+			}
+		} else {
+			break
+		}
+		j++
+	}
+
+	// should be left with a `)` or it is corrupted
+	if inp[j] == ')' && comma && lhs.Len() > 0 && rhs.Len() > 0 {
+		return Must(strconv.Atoi(lhs.String())) * Must(strconv.Atoi(rhs.String())), j
+	}
+
+	return 0, j
+}
+
 func part1(inp string) int {
 	total := 0
 	n := len(inp)
@@ -20,41 +59,9 @@ func part1(inp string) int {
 			// eat the chars
 			i += 4
 
-			// string buffers
-			lhs := strings.Builder{}
-			rhs := strings.Builder{}
-			lhs.Grow(3)
-			rhs.Grow(3)
-
-			// if we have seen a comma
-			comma := false
-			// only look ahead 7 chars, because the numbers are 1-3 digits + `)`
-			end := i + 7
-			for i < end {
-				n := inp[i]
-				if n == ',' {
-					if comma {
-						i++
-						break
-					}
-					comma = true
-				} else if unicode.IsDigit(rune(n)) {
-					if comma {
-						rhs.WriteByte(n)
-					} else {
-						lhs.WriteByte(n)
-					}
-				} else {
-					break
-				}
-				i++
-			}
-
-			// should be left with a `)` or it is corrupted
-			if inp[i] == ')' && comma && lhs.Len() > 0 && rhs.Len() > 0 {
-				total += Must(strconv.Atoi(lhs.String())) * Must(strconv.Atoi(rhs.String()))
-			}
-
+			var t int
+			t, i = parseMulInner(inp, i)
+			total += t
 		}
 		i++
 	}
@@ -73,43 +80,11 @@ func part2(inp string) int {
 		if do && inp[i] == 'm' && inp[i+1] == 'u' && inp[i+2] == 'l' && inp[i+3] == '(' {
 			// eat the chars
 			i += 4
+			var t int
+			t, i = parseMulInner(inp, i)
+			total += t
 
-			// string buffers
-			lhs := strings.Builder{}
-			rhs := strings.Builder{}
-			lhs.Grow(3)
-			rhs.Grow(3)
-
-			// if we have seen a comma
-			comma := false
-			// only look ahead 7 chars, because the numbers are 1-3 digits + `)`
-			end := i + 7
-			for i < end {
-				n := inp[i]
-				if n == ',' {
-					if comma {
-						i++
-						break
-					}
-					comma = true
-				} else if unicode.IsDigit(rune(n)) {
-					if comma {
-						rhs.WriteByte(n)
-					} else {
-						lhs.WriteByte(n)
-					}
-				} else {
-					break
-				}
-				i++
-			}
-
-			// should be left with a `)` or it is corrupted
-			if inp[i] == ')' && comma && lhs.Len() > 0 && rhs.Len() > 0 {
-				total += Must(strconv.Atoi(lhs.String())) * Must(strconv.Atoi(rhs.String()))
-			}
-
-			// if we see do
+			// if we see `do`
 		} else if inp[i] == 'd' && inp[i+1] == 'o' {
 			i += 2
 
